@@ -17,7 +17,7 @@ pub struct EquityAward {
 impl EquityAwardCenter {
     /// Parses the EquityAwardsCenter_EquityDetails csv file.
     ///
-    /// The file can be downloaded from `Accounts > Equity Awards > Export`.
+    /// The file can be downloaded from https://client.schwab.com/app/accounts/equityawards/#/equityTodayView > Export.
     pub fn parse_from_csv(path_to_csv: &str) -> Result<Self> {
         let mut awards: Vec<EquityAward> = Vec::new();
         let mut cursor_in_equity_award_shares = false;
@@ -42,7 +42,7 @@ impl EquityAwardCenter {
                 // Verify columns
                 if record.get(0) == Some("Award Date") {
                     assert_eq!(
-                        record.into_iter().collect::<Vec<&str>>(),
+                        record.into_iter().collect::<Vec<_>>(),
                         vec![
                             "Award Date",
                             "Symbol",
@@ -65,12 +65,10 @@ impl EquityAwardCenter {
                     .map(|s| NaiveDate::parse_from_str(s, "%m-%d-%Y").is_ok())
                     .unwrap_or(false);
                 if is_record {
-                    let symbol = record.get(1).unwrap().to_owned();
-                    let date_acquired =
-                        NaiveDate::parse_from_str(record.get(7).unwrap(), "%m-%d-%Y").unwrap();
-                    let acquisition_price: f64 =
-                        record.get(8).unwrap().replace("$", "").parse().unwrap();
-                    let available_to_sell: f64 = record.get(10).unwrap().parse().unwrap();
+                    let symbol = record[1].to_owned();
+                    let date_acquired = NaiveDate::parse_from_str(&record[7], "%m-%d-%Y").unwrap();
+                    let acquisition_price: f64 = record[8].replace("$", "").parse().unwrap();
+                    let available_to_sell: f64 = record[10].parse().unwrap();
 
                     let award = EquityAward {
                         symbol,
@@ -83,7 +81,7 @@ impl EquityAwardCenter {
             }
         }
 
-        return Ok(EquityAwardCenter { awards });
+        Ok(Self { awards })
     }
 }
 
